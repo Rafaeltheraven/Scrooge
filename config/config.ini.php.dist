@@ -1,0 +1,51 @@
+;<?php die(); ?>
+
+;#########################################################
+; General                                                #
+;#########################################################
+
+; What mailuser to use to send emails. If not set, will
+; use the default as specified by php.ini
+; DEFAULT: none
+;mail_from    = 
+
+;#########################################################
+; Auth                                                   #
+;#########################################################
+
+; How long a person stays logged in. Should be specified
+; as number of seconds.
+; DEFAULT: 1 day
+;auth_ttl     = 86400
+
+;#########################################################
+; Database                                               #
+;#########################################################
+
+; Database Type/Driver to user
+; Theoretically supported drivers are pgsql, mysql and all others documented here: 
+; https://www.php.net/manual/en/pdo.drivers.php
+; WARNING: This system was designed with postgres in mind, queries may not work on other DBMS's. 
+; DEFAULT: pgsql
+;db_type     = pgsql 
+
+; Hostname of your database
+; DEFAULT: localhost
+;db_host     = localhost
+
+; Port of your database instance
+; DEFAULT: 5432
+;db_port     = 5432
+
+; Name of your Anubis database
+; DEFAULT: none
+db_name      = scrooge
+
+; Name of your database user
+; DEFAULT: none
+db_user      = scrooge
+
+; Password for your database user
+; DEFAULT: none
+;db_password = scroogeSecurePW
+

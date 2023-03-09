@@ -1,0 +1,24 @@
+{
+	"name": "rafaeltheraven/scrooge",
+	"authors": [
+		{
+			"name": "Rafael Dulfer",
+			"email": "rafael@dulfer.be"
+		}
+	],
+    "require": {
+		"rafaeltheraven/db-changeset-manager-psql": "^0.3.6",
+		"delight-im/auth": "^8.3",
+		"chillerlan/php-qrcode": "^4.3"
+    },
+    "autoload": {
+    	"files": [
+    		"lib/init.php"
+    	],
+    	"psr-4": {"": "class/"}
+    },
+	"require-dev": {
+		"phpunit/phpunit": "^9.5",
+		"phpunit/php-code-coverage": "^9.2"
+	}
+}
