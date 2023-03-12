@@ -7,31 +7,26 @@ require($root . '/lib/utils.php');
 
 $auth = new Delight\Auth\Auth($conn);
 
-function register_user(string $email, string $password, string $username): int {
+function register_user(string $email, string $password): int {
 	global $auth;
-	if (preg_match('/[\x00-\x1f\x7f\/:\\\\]/', $username, $matches) === 0) {
-		try {
-			$userID = $auth->registerWithUniqueUsername($email, $password, $username, function ($selector, $token) use ($email, $username) {
-				send_verification_email($selector, $token, $email, $username);
-			});
-			return $userID;
-		} catch (Exception $e) {
-			handle_exception_default($e);
-			return -1;
-		}
-	} else {
-		return_error("Your username contained the following invalid characters: " . implode(", ", array_slice($matches, 1)), 422);
+	try {
+		$userID = $auth->register($email, $password, null, function ($selector, $token) use ($email, $full_name) {
+			send_verification_email($selector, $token, $email, $full_name);
+		});
+		return $userID;
+	} catch (Exception $e) {
+		handle_exception_default($e);
 		return -1;
 	}
 }
 
-function login(string $username, string $password): bool {
+function login(string $email, string $password): bool {
 	global $auth;
 	try {
-		$auth->loginWithUsername($username, $password, get_remember_duration());
+		$auth->login($email, $password, get_remember_duration());
 		userinfo_create($auth->getUserId());
 		return true;
-	} catch (Delight\Auth\InvalidPasswordException | Delight\Auth\UnknownUsernameException | Delight\Auth\AmbiguousUsernameException $e) {
+	} catch (Delight\Auth\InvalidEmailException | Delight\Auth\EmailNotVerifiedException | Delight\Auth\InvalidPasswordException $e) {
 		return_error('Invalid username or password or email has not been verified.', 403);
 		return false;
 	} catch (Exception $e) {
@@ -51,11 +46,11 @@ function verify_email(string $selector, string $token): bool {
 	}
 }
 
-function reset_password_request(string $email, string $username): bool {
+function reset_password_request(string $email, string $full_name): bool {
 	global $auth;
 	try {
-		$auth->forgotPassword($email, function ($selector, $token) use ($email, $username) {
-			send_reset_email($selector, $token, $email, $username);
+		$auth->forgotPassword($email, function ($selector, $token) use ($email, $full_name) {
+			send_reset_email($selector, $token, $email, $full_name);
 		});
 		return true;
 	} catch (Delight\Auth\InvalidEmailException | Delight\Auth\EmailNotVerifiedException $e) {
@@ -100,12 +95,12 @@ function change_password(string $old, string $new): bool {
 	}
 }
 
-function change_email(string $password, string $email, string $username): bool {
+function change_email(string $password, string $email, string $full_name): bool {
 	global $auth;
 	try {
 		if ($auth->reconfirmPassword($password)) {
-			$auth->changeEmail($email, function ($selector, $token) use ($email, $username) {
-				send_verification_email($selector, $token, $email, $username);
+			$auth->changeEmail($email, function ($selector, $token) use ($email, $full_name) {
+				send_verification_email($selector, $token, $email, $full_name);
 			});
 			return true;
 		} else {
@@ -118,11 +113,11 @@ function change_email(string $password, string $email, string $username): bool {
 	}
 }
 
-function resend_confirmation_email(string $email, string $username): bool {
+function resend_confirmation_email(string $email, string $full_name): bool {
 	global $auth;
 	try {
-		$auth->resendConfirmationForEmail($email, function ($selector, $token) use ($email, $username) {
-			send_verification_email($selector, $token, $email, $username);
+		$auth->resendConfirmationForEmail($email, function ($selector, $token) use ($email, $full_name) {
+			send_verification_email($selector, $token, $email, $full_name);
 		});
 		return true;
 	} catch (Delight\Auth\ConfirmationRequestNotFound $e) {
@@ -168,15 +163,15 @@ function get_remember_duration(): int {
 	return $config->get('auth_ttl', 60 * 60 * 24 * 1);
 }
 
-function send_verification_email(string $selector, string $token, string $email, string $username) {
-	$message = "Dear " . $username . ",\r\n You have been registered for a Scrooge account at " . get_base_url() . 
+function send_verification_email(string $selector, string $token, string $email, string $full_name) {
+	$message = "Dear " . $full_name . ",\r\n You have been registered for a Scrooge account at " . get_base_url() . 
 				". If you think this was a mistake you can ignore this email. Otherwise, to activate this account visit: " . 
 				get_base_url() . "/auth/verify.php?selector=" . urlencode($selector) . '&token=' . urlencode($token);
 	send_email($email, "You have been registered for a Scrooge account", $message);
 }
 
-function send_reset_email(string $selector, string $token, string $email, string $username) {
-	$message = "Dear " . $username . ",\r\n You have requested a password reset. To do so, visit " . get_base_url() .
+function send_reset_email(string $selector, string $token, string $email, string $full_name) {
+	$message = "Dear " . $full_name . ",\r\n You have requested a password reset. To do so, visit " . get_base_url() .
 	"/auth/reset.php?selector=" . urlencode($selector) . '&token=' . urlencode($token);
 	send_email($email, "Scrooge Password Reset", $message);
 }
