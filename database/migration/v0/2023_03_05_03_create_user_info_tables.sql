@@ -8,4 +8,8 @@ CREATE TABLE IF NOT EXISTS user_info (
 	created_by INTEGER references users(id)
 );
 
+CREATE TABLE IF NOT EXISTS user_pending (
+	user_id INTEGER references user_info(user_id)
+);
+
 COMMIT;
