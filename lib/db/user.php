@@ -2,11 +2,10 @@
 
 require_once(__DIR__ . '../../vendor/autoload.php');
 require_once($root . '/lib/db/conn.php');
-require($root . '/class/UserInfo.php');
 
 function userinfo_create(int $user_id): UserInfo {
 	global $conn;
-	$query = "INSERT INTO user_info VALUES (?);";
+	$query = "INSERT INTO user_info VALUES (?) RETURNING user_id;";
 	$stmt = $conn->prepare($query);
 	$stmt->bindParam(0, $user_id);
 	$stmt->execute();
@@ -15,15 +14,18 @@ function userinfo_create(int $user_id): UserInfo {
 	return new UserInfo($results['user_id']);
 }
 
-function userinfo_readByUserId(string $user_id): UserInfo {
+function userinfo_readByUserId(string $user_id): ?UserInfo {
 	global $conn;
-	$query = "SELECT * FROM user_info WHERE user_id = ?";
+	$query = "SELECT * FROM user_info WHERE user_id = ?;";
 	$stmt = $conn->prepare($query);
 	$stmt->bindParam(0, $user_id);
 	$stmt->execute();
 	$stmt->setFetchMode(PDO::FETCH_ASSOC);
 	$results=$stmt->fetch();
-	return new UserInfo($results['user_id'], $results['full_name'], $results['iban'], $results['bic']);
+	if (empty($results)) {
+		return null;
+	}
+	return new UserInfo($results['user_id'], $results['full_name'], $results['iban'], $results['bic'], $results['created_by']);
 }
 
 function userinfo_update(UserInfo $newData): bool {
@@ -35,8 +37,9 @@ function userinfo_update(UserInfo $newData): bool {
 	foreach ($newData->getChangedFields() as $key => $value) {
 		if ($value) {
 			$func = "get_" . $key;
-			$stmt->bindParam($counter, $newData->$func());
-			$counter++;
+			$stmt->bindParam($counter, $key);
+			$stmt->bindParam($counter+1, $newData->$func());
+			$counter += 2;
 		}
 	}
 	if ($counter === 0) {
@@ -44,6 +47,37 @@ function userinfo_update(UserInfo $newData): bool {
 	}
 	$stmt->bindParam($counter, $newData->get_id());
 	return true;
+}
+
+function virtualuser_updateEmail($id, $email) {
+	global $conn;
+	$query = "UPDATE users SET email = ? WHERE user_id = ?;";
+	$stmt = $conn->prepare($query);
+	$stmt->bindParam(0, $email);
+	$stmt->bindParam(1, $id);
+	$stmt->execute();
+}
+
+function virtualuser_create(string $email, int $created_by) {
+	global $conn;
+	try {
+		$conn->beginTransaction();
+		$query = "INSERT INTO users (email) VALUES (?) RETURNING id;";
+		$stmt = $conn->prepare($query);
+		$stmt->bindParam(0, $email);
+		$stmt->setFetchMode(PDO::FETCH_ASSOC);
+		$stmt->execute();
+		$id = $stmt->fetch()['id'];
+		$query = "INSERT INTO user_info (user_id, created_by) VALUES (?, ?);";
+		$stmt = $conn->prepare($query);
+		$stmt->bindParam(0, $id);
+		$stmt->bindParam(1, $created_by);
+		$stmt->execute();
+		$conn->commit();
+	} catch (PDOException $e) {
+		$conn->rollBack();
+		throw $e;
+	}
 }
 
 ?>

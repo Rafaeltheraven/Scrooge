@@ -151,9 +151,9 @@ function require_auth() {
 
 function get_user_info() {
 	global $auth;
-	require_auth();
 	if (!isset($_SESSION['_internal_user_info'])) {
 		// load info
+		$_SESSION['_internal_user_info'] = userinfo_readByUserId($auth->getUserId());
 	}
 	return $_SESSION['_internal_user_info'];
 }
