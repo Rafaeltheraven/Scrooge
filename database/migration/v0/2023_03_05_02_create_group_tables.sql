@@ -14,11 +14,14 @@ CREATE TABLE IF NOT EXISTS group_members (
 
 CREATE TABLE IF NOT EXISTS group_payments (
 	id SERIAL PRIMARY KEY,
-	creditor INTEGER references group_members(id)
-	amount INTEGER NOT NULL,
+	creditor INTEGER references group_members(id),
+	amount MONEY NOT NULL,
 	description VARCHAR(255) NOT NULL,
-	debitor INTEGER references group_members(id)
 	datetime DATETIME NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS group_payments_debtor (
+	payment_id INTEGER references group_payments(id),
+	user_id INTEGER references group_members(member_id)
+);
 COMMIT;
