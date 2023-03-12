@@ -9,6 +9,12 @@
 ; DEFAULT: none
 ;mail_from    = 
 
+; OpenIBAN validator endpoint
+; Used to validate supplied IBANs and to "calculate" the
+; associated BIC code.
+; DEFAULT: https://openiban.com/
+iban_endpoint = https://openiban.com/
+
 ;#########################################################
 ; Auth                                                   #
 ;#########################################################
