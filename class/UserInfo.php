@@ -6,13 +6,15 @@ class UserInfo {
 	private string $iban;
 	private string $bic;
 	private array $changedFields;
+	private int $created_by;
 	private int $id;
 
-	public function __construct($id, $full_name = "", $iban = "", $bic = "") {
+	public function __construct($id, $full_name = "", $iban = "", $bic = "", $created_by = null) {
 		$this->id = $id;
 		$this->full_name = $full_name;
 		$this->iban = $iban;
 		$this->bic = $bic;
+		$this->created_by = $created_by;
 		$this->changedFields = array(
 			'full_name' => false,
 			'iban' => false,
@@ -51,8 +53,20 @@ class UserInfo {
 		return $this->id;
 	}
 
+	public function get_created_by() {
+		return $this->created_by;
+	}
+
 	public function getChangedFields() {
 		return array_filter($this->changedFields);
+	}
+
+	public function as_array() {
+		return array(
+			'full_name' => $this->get_full_name(),
+			'IBAN' => $this->get_IBAN(),
+			'BIC' => $this->get_BIC()
+		)
 	}
 }
 
