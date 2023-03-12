@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS group_payments (
 
 CREATE TABLE IF NOT EXISTS group_payments_debtor (
 	payment_id INTEGER references group_payments(id),
-	user_id INTEGER references group_members(member_id)
+	user_id INTEGER references group_members(member_id), 
+	payback BOOL DEFAULT false
 );
 COMMIT;
