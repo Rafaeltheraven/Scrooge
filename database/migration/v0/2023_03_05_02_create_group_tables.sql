@@ -17,12 +17,12 @@ CREATE TABLE IF NOT EXISTS group_payments (
 	creditor INTEGER references group_members(id),
 	amount MONEY NOT NULL,
 	description VARCHAR(255) NOT NULL,
-	datetime DATETIME NOT NULL
+	date_time DATETIME NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS group_payments_debtor (
 	payment_id INTEGER references group_payments(id),
-	user_id INTEGER references group_members(member_id), 
+	debtor_id INTEGER references group_members(member_id), 
 	payback BOOL DEFAULT false
 );
 COMMIT;
