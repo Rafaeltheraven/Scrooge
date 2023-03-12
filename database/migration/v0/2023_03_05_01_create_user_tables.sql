@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"id" SERIAL PRIMARY KEY CHECK ("id" >= 0),
 	"email" VARCHAR(249) UNIQUE NOT NULL,
 	"password" VARCHAR(255) NOT NULL,
-	"username" VARCHAR(100) DEFAULT NULL,
 	"status" SMALLINT NOT NULL DEFAULT '0' CHECK ("status" >= 0),
 	"verified" SMALLINT NOT NULL DEFAULT '0' CHECK ("verified" >= 0),
 	"resettable" SMALLINT NOT NULL DEFAULT '1' CHECK ("resettable" >= 0),
